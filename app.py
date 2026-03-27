@@ -81,7 +81,10 @@ def gerar_pdf(dados):
             y -= 11
         y -= 4
 
-    items        = dados.get('items', [])
+    items = dados.get('items', [])
+    if isinstance(items, str):
+        import json as _json
+        items = _json.loads(items)
     desconto_pct = float(dados.get('desconto', 0))
     subtotal     = sum(float(it['qtd']) * float(it['preco_unit']) for it in items)
     desconto_val = subtotal * desconto_pct
