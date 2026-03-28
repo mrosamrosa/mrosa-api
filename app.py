@@ -194,8 +194,8 @@ def gerar_proposta():
         with open(filepath, 'wb') as f:
             f.write(pdf_bytes2.read())
 
-        base_url = request.host_url.rstrip('/')
-        pdf_url = f"{base_url}/pdf/{filename}"
+base_url = request.host_url.rstrip('/').replace('http://', 'https://')
+pdf_url = f"{base_url}/pdf/{filename}"
 
         return jsonify({'success': True, 'pdf_base64': pdf_b64, 'pdf_url': pdf_url})
     except Exception as e:
