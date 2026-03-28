@@ -182,12 +182,32 @@ def gerar_pdf(dados):
 @app.route('/gerar-proposta', methods=['POST'])
 def gerar_proposta():
     try:
+        import uuid, tempfile
         dados = request.get_json()
+
         pdf_bytes = gerar_pdf(dados)
         pdf_b64 = base64.b64encode(pdf_bytes.read()).decode('utf-8')
-        return jsonify({'success': True, 'pdf_base64': pdf_b64})
+
+        filename = f"proposta_{uuid.uuid4().hex[:8]}.pdf"
+        filepath = os.path.join(tempfile.gettempdir(), filename)
+        pdf_bytes2 = gerar_pdf(dados)
+        with open(filepath, 'wb') as f:
+            f.write(pdf_bytes2.read())
+
+        base_url = request.host_url.rstrip('/')
+        pdf_url = f"{base_url}/pdf/{filename}"
+
+        return jsonify({'success': True, 'pdf_base64': pdf_b64, 'pdf_url': pdf_url})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/pdf/<filename>', methods=['GET'])
+def serve_pdf(filename):
+    import tempfile
+    filepath = os.path.join(tempfile.gettempdir(), filename)
+    if os.path.exists(filepath):
+        return send_file(filepath, mimetype='application/pdf', as_attachment=True, download_name=filename)
+    return jsonify({'error': 'File not found'}), 404
 
 @app.route('/health', methods=['GET'])
 def health():
